@@ -3,7 +3,8 @@ from gymnasium import spaces
 from collections import deque
 
 from .singlecombat_task import SingleCombatTask, HierarchicalSingleCombatTask
-from ..reward_functions import AltitudeReward, PostureReward, MissilePostureReward, EventDrivenReward, ShootPenaltyReward
+from ..reward_functions import AltitudeReward, CombatGeometryReward, EventDrivenReward, GunBEHITReward, GunTargetTailReward, \
+    GunWEZReward, GunWEZDOTReward, PostureReward, RelativeAltitudeReward, HeadingReward, MissilePostureReward, ShootPenaltyReward
 from ..core.simulatior import MissileSimulator, AIM_9M, AIM_120B, ChaffSimulator
 from ..utils.utils import LLA2NEU, get_AO_TA_R
 
@@ -261,16 +262,15 @@ class Scenario1(HierarchicalSingleCombatTask, SingleCombatShootMissileTask):
         """Convert high-level action into low-level action.
         """
         if self.use_baseline and agent_id in env.enm_ids:
-            # self._shoot_action[agent_id] = action[-4:]
-            self._shoot_action[agent_id] = [0,0,0,0]
+            #self._shoot_action[agent_id] = action[-4:]
+            self._shoot_action[agent_id] = [0, 0, 0, 0]
             action = self.baseline_agent.get_action(env, env.task)
             action = self.baseline_agent.normalize_action(env, agent_id, action)
             if self.use_artillery:
-                self._shoot_action[agent_id] = [1,1,1,1]
-            
+                self._shoot_action[agent_id] = [1, 1, 1, 1]
             return action
         if agent_id in env.ego_ids:
-            self._shoot_action[agent_id] = action[-4:]
+            self._shoot_action[agent_id] = action[-4:] # ADD, check for enm ids!
         return HierarchicalSingleCombatTask.normalize_action(self, env, agent_id, action[:-4].astype(np.int32))
 
     def reset(self, env):
@@ -348,12 +348,11 @@ class Scenario1(HierarchicalSingleCombatTask, SingleCombatShootMissileTask):
         
         if distance / 1000 < munition_info["AIM-9M"]["dist"] and attack_angle < munition_info["AIM-9M"]["AO"]:
             ret[2] = True
-
+            
         if self.use_baseline == True and agent_id in env.enm_ids:
             ret[1] = False
             if distance / 1000 < munition_info["AIM-120B"]["dist"] and attack_angle < munition_info["AIM-120B"]["AO"]/2:
-                ret[1] = True 
-
+                ret[1] = True
         
         return ret, enemy
         
@@ -370,10 +369,17 @@ class Scenario1_curriculum(Scenario1):
     def __init__(self, config: str):
         Scenario1.__init__(self, config)
         self.reward_functions = [
-            PostureReward(self.config),
             AltitudeReward(self.config),
+            CombatGeometryReward(self.config),
             EventDrivenReward(self.config),
-            ShootPenaltyReward(self.config)
+            GunBEHITReward(self.config),
+            GunTargetTailReward(self.config),
+            GunWEZDOTReward(self.config),
+            GunWEZReward(self.config),
+            PostureReward(self.config),
+            RelativeAltitudeReward(self.config),
+            MissilePostureReward(self.config),
+            ShootPenaltyReward(self.config),
         ]
 
         self.curriculum_angle = 0
@@ -401,6 +407,8 @@ class Scenario1_curriculum(Scenario1):
                         self.record.append(1)
                     else:
                         self.record.append(0)
+                    if len(self.record) > 20:
+                        self.record.pop(0)   
                     self.winning_rate = sum(self.record)/len(self.record)   
                     print("current winning rate is {}/{}, curriculum is {}'th stage".format(sum(self.record), len(self.record), self.curriculum_angle))
                 break

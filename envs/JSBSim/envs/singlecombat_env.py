@@ -1,7 +1,7 @@
 import numpy as np
 from .env_base import BaseEnv
 from ..tasks import SingleCombatTask, SingleCombatDodgeMissileTask, HierarchicalSingleCombatDodgeMissileTask, \
-    HierarchicalSingleCombatShootTask, SingleCombatShootMissileTask, HierarchicalSingleCombatTask, Scenario1, Scenario1_curriculum, WVRTask
+    HierarchicalSingleCombatShootTask, SingleCombatShootMissileTask, HierarchicalSingleCombatTask, Scenario1, Scenario1_curriculum, WVRTask, Maneuver_curriculum
 from ..tasks.KAI_project_task import Scenario1_for_KAI
 from ..utils.utils import calculate_coordinates_heading_by_curriculum
 
@@ -37,6 +37,8 @@ class SingleCombatEnv(BaseEnv):
             self.task = Scenario1_curriculum(self.config)     
         elif taskname == "wvr":
             self.task = WVRTask(self.config)     
+        elif taskname == "maneuver_curriculum":
+            self.task = Maneuver_curriculum(self.config)
         else:
             raise NotImplementedError(f"Unknown taskname: {taskname}")
 
@@ -68,21 +70,21 @@ class SingleCombatEnv(BaseEnv):
         #     'ic_h_sl_ft': 25000,
         # })
         
-        self.init_states[0].update({
-            'ic_lat_geod_deg': 60.0,
-            'ic_long_gc_deg': 120.0,
-            'ic_h_sl_ft': 20000,
-            'ic_psi_true_deg': 0,
-            'ic_u_fps': 800.0,
-        })
+        # self.init_states[0].update({
+        #     'ic_lat_geod_deg': 60.0,
+        #     'ic_long_gc_deg': 120.0,
+        #     'ic_h_sl_ft': 20000,
+        #     'ic_psi_true_deg': 0,
+        #     'ic_u_fps': 800.0,
+        # })
         
-        self.init_states[1].update({
-            'ic_lat_geod_deg': 60.1,
-            'ic_long_gc_deg': 120.0,
-            'ic_h_sl_ft': 20000,
-            'ic_psi_true_deg': 0,
-            'ic_u_fps': 800.0,
-        })
+        # self.init_states[1].update({
+        #     'ic_lat_geod_deg': 60.1,
+        #     'ic_long_gc_deg': 120.0,
+        #     'ic_h_sl_ft': 20000,
+        #     'ic_psi_true_deg': 0,
+        #     'ic_u_fps': 800.0,
+        # })
                 
         init_states = self.init_states.copy()
         for idx, sim in enumerate(self.agents.values()):

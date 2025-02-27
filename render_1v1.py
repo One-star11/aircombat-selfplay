@@ -42,8 +42,8 @@ ego_policy = PPOActor(args, env.observation_space, env.action_space, device=torc
 enm_policy = PPOActor(args, env.observation_space, env.action_space, device=torch.device("cuda"))
 ego_policy.eval()
 enm_policy.eval()
-ego_policy.load_state_dict(torch.load("./checkpoint/actor_25.pt"))
-enm_policy.load_state_dict(torch.load("./checkpoint/actor_2.pt"))
+ego_policy.load_state_dict(torch.load("./checkpoint/actor_latest.pt"))
+enm_policy.load_state_dict(torch.load("./checkpoint/actor_latest.pt"))
 
 for name, param in ego_policy.named_parameters():
     print(f"{name}: requires_grad={param.requires_grad}")
