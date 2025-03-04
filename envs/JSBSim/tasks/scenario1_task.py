@@ -164,11 +164,13 @@ class Scenario1_curriculum(Scenario1):
         self.curriculum_angle = 0
         self.winning_rate = 0
         self.record = []
+        self.shooting_step = 0
         
     def reset(self, env):
-        if self.winning_rate >= 0.9 and len(self.record) > 20:
+        if self.winning_rate >= 0.95 and len(self.record) >= 50:
             self.curriculum_angle += 1
             self.record = []
+            self.shooting_step = 0
         env.reset_simulators_curriculum(self.curriculum_angle)
         Scenario1.reset(self, env)
     
@@ -181,12 +183,15 @@ class Scenario1_curriculum(Scenario1):
             success = success and s
             if done:
                 if env.agents[agent_id].color == 'Blue':
+                    self.shooting_step += 1
+                    if self.shooting_step % 25 == 0:
+                        self.use_artillery = not(self.use_artillery)
                     print(success, s)
                     if success:
                         self.record.append(1)
                     else:
                         self.record.append(0)
-                    if len(self.record) > 20:
+                    if len(self.record) > 50:
                         self.record.pop(0)   
                     self.winning_rate = sum(self.record)/len(self.record)   
                     print("current winning rate is {}/{}, curriculum is {}'th stage".format(sum(self.record), len(self.record), self.curriculum_angle))
