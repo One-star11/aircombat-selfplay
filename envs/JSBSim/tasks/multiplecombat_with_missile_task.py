@@ -554,6 +554,8 @@ class Scenario2_curriculum(Scenario2):
                         self.record.append(1)
                     else:
                         self.record.append(0)
+                    if len(self.record) > 20:
+                        self.record = self.record[1:]
                     self.winning_rate = sum(self.record)/len(self.record)   
                     print("current winning rate is {}/{}, curriculum is {}'th stage".format(sum(self.record), len(self.record), self.curriculum_angle))
                     print(self.done_id,self.info_other['done_condition'])
